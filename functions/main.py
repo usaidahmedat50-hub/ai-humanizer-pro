@@ -18,7 +18,7 @@ class HumanizeRequest(BaseModel):
     text: str
     tone: str
 
-@app.post("/api/humanize")
+@app.post("/humanize")
 async def api_humanize(req: HumanizeRequest):
     if len(req.text.split()) > 500:
         raise HTTPException(status_code=400, detail="Max 500 words allowed.")
@@ -39,7 +39,7 @@ async def api_humanize(req: HumanizeRequest):
         print(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Error processing text.")
 
-@app.post("/api/analyze")
+@app.post("/analyze")
 async def api_analyze(req: HumanizeRequest):
     try:
         score = humanizer.calculate_human_score(req.text)
