@@ -1,6 +1,7 @@
 [build]
   command = "pip install -r requirements.txt"
-  publish = "."
+  publish = "public"
+
 
 [functions]
   directory = "functions"
