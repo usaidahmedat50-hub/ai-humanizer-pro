@@ -14,6 +14,10 @@ load_dotenv()
 app = FastAPI(title="Stateless AI Humanizer")
 handler = Mangum(app)
 
+@app.get("/health")
+async def health_check():
+    return {"status": "ok", "message": "FastAPI is running on Netlify Functions"}
+
 class HumanizeRequest(BaseModel):
     text: str
     tone: str
