@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HumanizeAI - Stateless AI Humanizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #000; color: #fff; scroll-behavior: smooth; }
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .gradient-text { background: linear-gradient(135deg, #fff 0%, #a1a1a1 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .primary-btn { background: linear-gradient(135deg, #fff 0%, #d1d1d1 100%); color: #000; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .primary-btn:hover { transform: scale(1.02); box-shadow: 0 0 20px rgba(255, 255, 255, 0.2); }
+        .tone-btn.active { background: rgba(255, 255, 255, 0.15); border-color: rgba(255, 255, 255, 0.3); }
+        .meter-fill { transition: width 1s ease-out; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+    </style>
+</head>
+<body class="min-h-screen py-10 px-4">
+    <!-- Hero Section -->
+    <header class="max-w-4xl mx-auto text-center mb-16 space-y-4">
+        <div class="inline-flex items-center px-3 py-1 text-sm font-medium border border-white/10 rounded-full bg-white/5 text-gray-400 mb-4">
+            ✨ Gemini 3 Flash Powered
+        </div>
+        <h1 class="text-5xl md:text-7xl font-bold tracking-tight gradient-text">Humanize Your AI.</h1>
+        <p class="text-xl text-gray-400 max-w-2xl mx-auto">Transform robotic AI text into natural, human-like content in seconds. 100% bypass guaranteed.</p>
+    </header>
+
+    <main class="max-w-6xl mx-auto">
+        <!-- Humanizer Tool -->
+        <div class="glass rounded-3xl p-6 md:p-8 space-y-8">
+            <!-- Mode Switcher -->
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <div class="flex p-1 bg-black/40 rounded-xl border border-white/5">
+                    <button id="btn-natural" onclick="setTone('natural')" class="tone-btn active px-4 py-2 text-sm font-medium rounded-lg transition-all">Natural</button>
+                    <button id="btn-academic" onclick="setTone('academic')" class="tone-btn px-4 py-2 text-sm font-medium rounded-lg transition-all text-gray-400 hover:text-white">Academic</button>
+                    <button id="btn-storyteller" onclick="setTone('storyteller')" class="tone-btn px-4 py-2 text-sm font-medium rounded-lg transition-all text-gray-400 hover:text-white">Storyteller</button>
+                </div>
+                <div class="text-xs text-gray-500 bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
+                    <span id="char-count">0</span> / 500 Words
+                </div>
+            </div>
+
+            <!-- Editor Grid -->
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- Input Area -->
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center px-1">
+                        <label class="text-sm font-medium text-gray-400 uppercase tracking-widest">Input Text</label>
+                        <span id="bypass-initial" class="text-xs text-gray-500">AI Score: 100%</span>
+                    </div>
+                    <textarea id="input-text" placeholder="Paste your AI-generated text here..." class="w-full h-80 bg-black/20 border border-white/10 rounded-2xl p-4 text-gray-300 focus:outline-none focus:border-white/30 transition-all resize-none"></textarea>
+                </div>
+
+                <!-- Output Area -->
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center px-1">
+                        <label class="text-sm font-medium text-gray-400 uppercase tracking-widest">Humanized Result</label>
+                        <div class="flex items-center gap-2">
+                           <span class="text-xs text-gray-400">Human Score:</span>
+                           <span id="human-score-percent" class="text-xs font-bold text-green-400">0%</span>
+                        </div>
+                    </div>
+                    <div class="relative group">
+                        <div id="output-text" class="w-full h-80 bg-white/5 border border-white/10 rounded-2xl p-4 text-white overflow-y-auto whitespace-pre-wrap empty:before:content-['Result_will_appear_here...'] empty:before:text-gray-600"></div>
+                        <button id="copy-btn" class="absolute bottom-4 right-4 p-2.5 glass rounded-xl text-gray-400 hover:text-white transition-all opacity-0 group-hover:opacity-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats & Action -->
+            <div class="flex flex-col md:flex-row items-center justify-between gap-8 pt-4">
+                <div class="w-full md:w-1/2 space-y-4">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-400">Humanization Bypass Meter</span>
+                        <span id="meter-status" class="text-gray-500">Awaiting input...</span>
+                    </div>
+                    <div class="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+                        <div id="score-meter" class="meter-fill h-full bg-white w-0 shadow-[0_0_15px_rgba(255,255,255,0.4)]"></div>
+                    </div>
+                </div>
+                <button id="humanize-btn" onclick="humanize()" class="primary-btn w-full md:w-auto px-10 py-4 rounded-2xl font-bold text-lg shadow-xl shrink-0">
+                    Humanize Text
+                </button>
+            </div>
+        </div>
+
+        <!-- Trust Badges -->
+        <div class="mt-12 flex flex-wrap justify-center gap-8 text-gray-500 text-sm">
+            <div class="flex items-center gap-2">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Zero-Data Policy: We do not store your text.</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 4L12 14.01l-3-3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Processes in real-time.</span>
+            </div>
+        </div>
+
+        <!-- Pricing Section -->
+        <section class="mt-32 mb-20">
+            <h2 class="text-3xl font-bold text-center mb-12">Flexible Plans</h2>
+            <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <!-- Free Plan -->
+                <div class="glass p-8 rounded-3xl border border-white/10 flex flex-col">
+                    <h3 class="text-xl font-bold mb-2">Free Wanderer</h3>
+                    <p class="text-gray-500 text-sm mb-6">Test the waters of humanization.</p>
+                    <div class="text-4xl font-bold mb-8">$0<span class="text-lg font-normal text-gray-500">/mo</span></div>
+                    <ul class="space-y-4 mb-auto text-sm text-gray-300">
+                        <li class="flex items-center gap-2"><svg class="text-green-500" width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> Max 500 words / request</li>
+                        <li class="flex items-center gap-2"><svg class="text-green-500" width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> Standard Tone Access</li>
+                        <li class="flex items-center gap-2 tracking-tight"><svg class="text-gray-700" width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg> <span class="text-gray-600">No Priority Support</span></li>
+                    </ul>
+                    <button class="mt-8 py-3 rounded-xl border border-white/20 text-sm font-semibold hover:bg-white/5 transition-all">Current Plan</button>
+                </div>
+                <!-- Pro Plan -->
+                <div class="glass p-8 rounded-3xl border border-white/30 flex flex-col relative overflow-hidden">
+                    <div class="absolute top-4 right-4 bg-white text-black text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter">Pro</div>
+                    <h3 class="text-xl font-bold mb-2">Master Writer</h3>
+                    <p class="text-gray-500 text-sm mb-6">Unlimited bypass power.</p>
+                    <div class="text-4xl font-bold mb-8">$19<span class="text-lg font-normal text-gray-500">/mo</span></div>
+                    <ul class="space-y-4 mb-auto text-sm text-gray-300">
+                        <li class="flex items-center gap-2"><svg class="text-white" width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> Unlimited Word Count</li>
+                        <li class="flex items-center gap-2"><svg class="text-white" width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> All Tones (Natural, Academic, Story)</li>
+                         <li class="flex items-center gap-2"><svg class="text-white" width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> Priority API Response</li>
+                    </ul>
+                    <button class="mt-8 py-3 rounded-xl primary-btn text-sm font-bold">Upgrade Now</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        let currentTone = 'natural';
+        const inputText = document.getElementById('input-text');
+        const charCount = document.getElementById('char-count');
+        const humanizeBtn = document.getElementById('humanize-btn');
+        const outputText = document.getElementById('output-text');
+        const scoreMeter = document.getElementById('score-meter');
+        const scorePercent = document.getElementById('human-score-percent');
+        const meterStatus = document.getElementById('meter-status');
+
+        inputText.addEventListener('input', () => {
+            const words = inputText.value.trim().split(/\s+/).filter(w => w.length > 0);
+            charCount.innerText = words.length;
+            if (words.length > 500) {
+                charCount.classList.add('text-red-500');
+            } else {
+                charCount.classList.remove('text-red-500');
+            }
+        });
+
+        function setTone(tone) {
+            currentTone = tone;
+            document.querySelectorAll('.tone-btn').forEach(btn => {
+                btn.classList.remove('active', 'text-white');
+                btn.classList.add('text-gray-400');
+            });
+            document.getElementById(`btn-${tone}`).classList.add('active', 'text-white');
+        }
+
+        async function humanize() {
+            const text = inputText.value.trim();
+            if (!text) return alert("Please enter some text.");
+            
+            const wordCount = text.split(/\s+/).length;
+            if (wordCount > 500) return alert("Text too long! Maximum 500 words.");
+
+            humanizeBtn.disabled = true;
+            humanizeBtn.innerText = "Transforming...";
+            outputText.innerHTML = "";
+            scoreMeter.style.width = "0%";
+            scorePercent.innerText = "0%";
+            meterStatus.innerText = "Processing...";
+
+            try {
+                const res = await fetch('/api/humanize', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: text, tone: currentTone })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    outputText.innerText = data.humanized;
+                    updateScore(data.score);
+                } else {
+                    alert(data.detail || "Error humanizing text.");
+                    meterStatus.innerText = "Error encountered.";
+                }
+            } catch (err) {
+                alert("Failed to connect to server.");
+                meterStatus.innerText = "Connection error.";
+            } finally {
+                humanizeBtn.disabled = false;
+                humanizeBtn.innerText = "Humanize Text";
+            }
+        }
+
+        function updateScore(score) {
+            scoreMeter.style.width = score + "%";
+            scorePercent.innerText = score + "%";
+            meterStatus.innerText = score > 80 ? "Human-level complexity achieved." : "Low complexity detected.";
+            
+            if (score > 80) scoreMeter.classList.add('bg-green-400');
+            else if (score > 50) scoreMeter.classList.add('bg-yellow-400');
+            else scoreMeter.classList.add('bg-red-400');
+        }
+
+        document.getElementById('copy-btn').addEventListener('click', () => {
+            const text = outputText.innerText;
+            if (text) {
+                navigator.clipboard.writeText(text);
+                const originalSvg = document.getElementById('copy-btn').innerHTML;
+                document.getElementById('copy-btn').innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+                setTimeout(() => { document.getElementById('copy-btn').innerHTML = originalSvg; }, 2000);
+            }
+        });
+    </script>
+</body>
+</html>
